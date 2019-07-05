@@ -6,7 +6,7 @@ from psutil import cpu_percent, getloadavg, virtual_memory, swap_memory, disk_us
     net_io_counters, sensors_temperatures, cpu_freq, disk_partitions
 
 
-def display_ui(cpu_name, cpu_temp, gpu_stats, cpu_util, system_load, cpu_fr, phy_mem, swa_mem, disks_usage,
+def display_ui(cpu_name, gpu_name, cpu_temp, gpu_stats, cpu_util, system_load, cpu_fr, phy_mem, swa_mem, disks_usage,
                disk_io_speed, disk_temps, net_io_speed):
     columns = get_terminal_size().columns
     tab_width = int(columns / 3)
@@ -69,7 +69,7 @@ def display_ui(cpu_name, cpu_temp, gpu_stats, cpu_util, system_load, cpu_fr, phy
 
     if gpu_display:
         column0.append(expand_string("", column_width))
-        column2.append(expand_string("----------------GPU----------------", column_width))
+        column2.append(expand_string(gpu_name, column_width))
         column2.append(expand_string("", column_width))
 
         if gpu_stats[0] != "":
@@ -309,6 +309,36 @@ def read_disk_usages():
     return all_mount_info
 
 
+def read_gpu_name():
+    gpu_name = ""
+    mycall = Popen(["lspci"], stdout=PIPE)
+    result = str(mycall.communicate())
+
+    if "VGA compatible controller:" in result:
+        result = result.split("VGA compatible controller:")[1]
+        result = result.split("\\n")[0]
+
+        if "[AMD/ATI]" in result:
+            gpu_name = gpu_name + "AMD"
+            result = result.split("[AMD/ATI]")[1]
+            result = result.split("[")[1]
+            result = result.split("]")[0]
+            gpu_name = gpu_name + " " + result
+
+    if gpu_name == "":
+        gpu_name = "GPU"
+
+    gpu_name = gpu_name[:33]
+
+    while len(gpu_name) < 35:
+        gpu_name = "-" + gpu_name
+
+        if len(gpu_name) < 35:
+            gpu_name = gpu_name + "-"
+
+    return gpu_name
+
+
 def read_gpu_stats():
     mem_fr = ""
     cor_fr = ""
@@ -415,6 +445,7 @@ def main_thread():
     run = True
     first_run = True
     cpu_name = read_cpu_name()
+    gpu_name = read_gpu_name()
 
     while run:
 
@@ -442,7 +473,7 @@ def main_thread():
         net_io_speed.append(net_io_new[0] - net_io_old[0])
         net_io_speed.append(net_io_new[1] - net_io_old[1])
         net_io_old = net_io_new
-        display_ui(cpu_name, read_cpu_temps(), read_gpu_stats(), read_cpu_util(), read_system_load(),
+        display_ui(cpu_name, gpu_name, read_cpu_temps(), read_gpu_stats(), read_cpu_util(), read_system_load(),
                    read_cpu_freq(), read_phy_mem(), read_swa_mem(), read_disk_usages(), disk_io_speed, read_disk_temp(),
                    net_io_speed)
         sleep(1)
