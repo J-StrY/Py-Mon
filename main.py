@@ -132,9 +132,11 @@ def display_ui(cpu_name, gpu_name, cpu_temp, gpu_stats, cpu_util, system_load, c
 
     column2.append(expand_string("--------------Network--------------", column_width))
     column2.append(expand_string("", column_width))
-    column2.append(expand_string("             Send: " + str(net_io_speed[0]) + " Mb/S", column_width))
-    column2.append(expand_string("         Received: " + str(net_io_speed[1]) + " Mb/S", column_width))
-    column2.append(expand_string("", column_width))
+
+    for net in net_io_speed:
+        column2.append(expand_string(net[0].rjust(10) + " - Send: " + str(net[1]) + " Mb/S", column_width))
+        column2.append(expand_string("         Received: " + str(net[2]) + " Mb/S", column_width))
+        column2.append(expand_string("", column_width))
 
     max_length = len(column0)
 
@@ -412,9 +414,18 @@ def read_gpu_stats():
 
 
 def read_net_io():
+    net_ios = net_io_counters(pernic=True)
     net_io = []
-    net_io.append(int(net_io_counters().bytes_sent / 131072))
-    net_io.append(int(net_io_counters().bytes_recv / 131072))
+
+    for net in net_ios:
+        net_name = net.title().upper()
+
+        if net_name != "LO":
+            nic_io = []
+            nic_io.append(net_name)
+            nic_io.append(int(net_ios[net].bytes_sent / 131072))
+            nic_io.append(int(net_ios[net].bytes_recv / 131072))
+            net_io.append(nic_io)
 
     return net_io
 
@@ -471,8 +482,17 @@ def main_thread():
         disk_io_old = disk_io_new
         net_io_new = read_net_io()
         net_io_speed = []
-        net_io_speed.append(net_io_new[0] - net_io_old[0])
-        net_io_speed.append(net_io_new[1] - net_io_old[1])
+        counter = 0
+
+        for nets in net_io_old:
+            net = []
+            net_new = net_io_new[counter]
+            net.append(nets[0])
+            net.append(net_new[1] - nets[1])
+            net.append(net_new[2] - nets[2])
+            net_io_speed.append(net)
+            counter += 1
+
         net_io_old = net_io_new
         display_ui(cpu_name, gpu_name, read_cpu_temps(), read_gpu_stats(), read_cpu_util(), read_system_load(),
                    read_cpu_freq(), read_phy_mem(), read_swa_mem(), read_disk_usages(), disk_io_speed, read_disk_temp(),
