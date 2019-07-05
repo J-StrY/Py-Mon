@@ -193,6 +193,7 @@ def read_cpu_name():
     cpu_name = cpu_name.replace("(R)", "")
     cpu_name = cpu_name.replace("(TM)", "")
     cpu_name = cpu_name.replace("CPU ", "")
+    cpu_name = cpu_name[:33]
 
     while len(cpu_name) < 35:
         cpu_name = "-" + cpu_name
