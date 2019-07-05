@@ -414,6 +414,7 @@ def read_system_load():
 def main_thread():
     run = True
     first_run = True
+    cpu_name = read_cpu_name()
 
     while run:
 
@@ -441,7 +442,7 @@ def main_thread():
         net_io_speed.append(net_io_new[0] - net_io_old[0])
         net_io_speed.append(net_io_new[1] - net_io_old[1])
         net_io_old = net_io_new
-        display_ui(read_cpu_name(), read_cpu_temps(), read_gpu_stats(), read_cpu_util(), read_system_load(),
+        display_ui(cpu_name, read_cpu_temps(), read_gpu_stats(), read_cpu_util(), read_system_load(),
                    read_cpu_freq(), read_phy_mem(), read_swa_mem(), read_disk_usages(), disk_io_speed, read_disk_temp(),
                    net_io_speed)
         sleep(1)
