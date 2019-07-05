@@ -6,8 +6,8 @@ from psutil import cpu_percent, getloadavg, virtual_memory, swap_memory, disk_us
     net_io_counters, sensors_temperatures, cpu_freq, disk_partitions
 
 
-def display_ui(cpu_temp, gpu_stats, cpu_util, system_load, cpu_fr, phy_mem, swa_mem, disks_usage, disk_io_speed,
-               disk_temps, net_io_speed):
+def display_ui(cpu_name, cpu_temp, gpu_stats, cpu_util, system_load, cpu_fr, phy_mem, swa_mem, disks_usage,
+               disk_io_speed, disk_temps, net_io_speed):
     columns = get_terminal_size().columns
     tab_width = int(columns / 3)
     column_width = 35
@@ -19,7 +19,7 @@ def display_ui(cpu_temp, gpu_stats, cpu_util, system_load, cpu_fr, phy_mem, swa_
     print("Py-Mon ".center(columns))
     print("-".center(columns, "-"))
     print("")
-    column0.append(expand_string("----------------CPU----------------", column_width))
+    column0.append(expand_string(cpu_name, column_width))
     column0.append(expand_string("", column_width))
     counter = -1
 
@@ -181,6 +181,26 @@ def read_cpu_freq():
         cpu_fr.append(int(round(freq.current)))
 
     return cpu_fr
+
+
+def read_cpu_name():
+    file = open("/proc/cpuinfo", "r")
+
+    for line in file:
+        if "model name" in line:
+            cpu_name = line[13:-1]
+
+    cpu_name = cpu_name.replace("(R)", "")
+    cpu_name = cpu_name.replace("(TM)", "")
+    cpu_name = cpu_name.replace("CPU ", "")
+
+    while len(cpu_name) < 35:
+        cpu_name = "-" + cpu_name
+
+        if len(cpu_name) < 35:
+            cpu_name = cpu_name + "-"
+
+    return cpu_name
 
 
 def read_cpu_temps():
@@ -421,8 +441,9 @@ def main_thread():
         net_io_speed.append(net_io_new[0] - net_io_old[0])
         net_io_speed.append(net_io_new[1] - net_io_old[1])
         net_io_old = net_io_new
-        display_ui(read_cpu_temps(), read_gpu_stats(), read_cpu_util(), read_system_load(), read_cpu_freq(),
-                   read_phy_mem(), read_swa_mem(), read_disk_usages(), disk_io_speed, read_disk_temp(), net_io_speed)
+        display_ui(read_cpu_name(), read_cpu_temps(), read_gpu_stats(), read_cpu_util(), read_system_load(),
+                   read_cpu_freq(), read_phy_mem(), read_swa_mem(), read_disk_usages(), disk_io_speed, read_disk_temp(),
+                   net_io_speed)
         sleep(1)
 
 
