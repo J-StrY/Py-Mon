@@ -164,7 +164,7 @@ def display_ui(cpu_name, gpu_name, cpu_temp, gpu_stats, cpu_util, system_load, c
             line += " ".center(tab_width)
 
         print(line)
-
+        
 
 def expand_string(string, width):
 
@@ -327,6 +327,12 @@ def read_gpu_name():
             result = result.split("[")[1]
             result = result.split("]")[0]
             gpu_name = gpu_name + " " + result
+        elif "Intel Corporation" in result:
+            gpu_name = gpu_name + "Intel"
+            result = result.split("Intel Corporation")[1]
+            result = result.split("(")[0]
+            result = result.replace("Integrated Graphics Controller", "IGC")
+            gpu_name = gpu_name + result
 
     if gpu_name == "":
         gpu_name = "GPU"
