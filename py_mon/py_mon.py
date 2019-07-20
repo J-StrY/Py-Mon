@@ -242,12 +242,13 @@ def read_disk_io():
                 if old_disks[0] == disk_to_remove:
                     disk_counters.remove(old_disks)
 
-        disk_io = per_disk[disks]
-        disk = []
-        disk.append(disk_name)
-        disk.append(int(disk_io.read_bytes / 1048576))
-        disk.append(int(disk_io.write_bytes / 1048576))
-        disk_counters.append(disk)
+        if "SR" not in disk_name:
+            disk_io = per_disk[disks]
+            disk = []
+            disk.append(disk_name)
+            disk.append(int(disk_io.read_bytes / 1048576))
+            disk.append(int(disk_io.write_bytes / 1048576))
+            disk_counters.append(disk)
 
     return sorted(disk_counters)
 
@@ -263,7 +264,7 @@ def read_disk_temp():
     disk_names = sorted(disk_names)
 
     for name in disk_names:
-        if len(name) < 4:
+        if len(name) < 4 and "SR" not in name.upper():
             full_name = "/dev/" + name
             disk = []
             disk.append(name.upper())
