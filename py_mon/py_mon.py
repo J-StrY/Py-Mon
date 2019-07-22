@@ -1,13 +1,13 @@
 
 from os import system, get_terminal_size, path
-from time import sleep
+from time import sleep, strftime, gmtime
 from subprocess import Popen, PIPE
 from psutil import cpu_percent, getloadavg, virtual_memory, swap_memory, disk_usage, disk_io_counters, \
-    net_io_counters, sensors_temperatures, cpu_freq, disk_partitions
+    net_io_counters, sensors_temperatures, cpu_freq, disk_partitions, sensors_battery
 
 
 def display_ui(cpu_name, gpu_name, cpu_temp, gpu_stats, cpu_util, system_load, cpu_fr, phy_mem, swa_mem, disks_usage,
-               disk_io_speed, disk_temps, net_io_speed):
+               disk_io_speed, disk_temps, net_io_speed, battery_stat):
     columns = get_terminal_size().columns
     tab_width = int(columns / 3)
     column_width = 35
@@ -138,6 +138,13 @@ def display_ui(cpu_name, gpu_name, cpu_temp, gpu_stats, cpu_util, system_load, c
         column2.append(expand_string("         Received: " + str(net[2]) + " Mb/S", column_width))
         column2.append(expand_string("", column_width))
 
+    if battery_stat[0] != 0:
+        column2.append(expand_string("---------------Power---------------", column_width))
+        column2.append(expand_string("", column_width))
+        column2.append(expand_string("          Battery: " + str(battery_stat[0]) + "%", column_width))
+        column2.append(expand_string("        Time Left: " + str(battery_stat[1]), column_width))
+        column2.append(expand_string("       Plugged In: " + str(battery_stat[2]), column_width))
+
     max_length = len(column0)
 
     if max_length < len(column1):
@@ -172,6 +179,27 @@ def expand_string(string, width):
         string += " "
 
     return string
+
+
+def read_battery():
+    battery_stat = []
+
+    try:
+        battery_stat.append(round(sensors_battery().percent, 2))
+        battery_stat.append(strftime('%H:%M:%S', gmtime(sensors_battery().secsleft)))
+
+        if sensors_battery().power_plugged:
+            battery_stat.append("Yes")
+        else:
+            battery_stat.append("No")
+
+    except:
+        battery_stat.append(0)
+        battery_stat.append(0)
+        battery_stat.append("Yes")
+        return battery_stat
+    else:
+        return battery_stat
 
 
 def read_cpu_freq():
@@ -503,7 +531,7 @@ def main_thread():
         net_io_old = net_io_new
         display_ui(cpu_name, gpu_name, read_cpu_temps(), read_gpu_stats(), read_cpu_util(), read_system_load(),
                    read_cpu_freq(), read_phy_mem(), read_swa_mem(), read_disk_usages(), disk_io_speed, read_disk_temp(),
-                   net_io_speed)
+                   net_io_speed, read_battery())
         sleep(1)
 
 
