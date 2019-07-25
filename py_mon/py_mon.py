@@ -51,14 +51,15 @@ def display_ui(cpu_name, gpu_name, cpu_temp, gpu_stats, cpu_util, system_load, c
     column0.append(expand_string("", column_width))
     counter = -1
 
-    for temp in cpu_temp:
+    if cpu_temp[0] != 0:
+        for temp in cpu_temp:
 
-        if counter == -1:
-            column0.append(expand_string("      Temperature: " + str(temp) + "°", column_width))
-        else:
-            column0.append(expand_string("                " + str(counter) + ": " + str(temp) + "°", column_width))
+            if counter == -1:
+                column0.append(expand_string("      Temperature: " + str(temp) + "°", column_width))
+            else:
+                column0.append(expand_string("                " + str(counter) + ": " + str(temp) + "°", column_width))
 
-        counter += 1
+            counter += 1
 
     gpu_display = False
 
