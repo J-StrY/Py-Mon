@@ -274,7 +274,7 @@ def read_disk_io():
                 if old_disks[0] == disk_to_remove:
                     disk_counters.remove(old_disks)
 
-        if "SR" not in disk_name:
+        if "SR" or "LOOP" not in disk_name:
             disk_io = per_disk[disks]
             disk = []
             disk.append(disk_name)
