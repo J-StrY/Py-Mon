@@ -236,11 +236,15 @@ def read_cpu_name():
 
 def read_cpu_temps():
     sensor_temps = sensors_temperatures()
-    cpu_temps = sensor_temps["coretemp"]
     cpu_temp = []
 
-    for items in cpu_temps:
-        cpu_temp.append(int(items.current))
+    try:
+        cpu_temps = sensor_temps["coretemp"]
+
+        for items in cpu_temps:
+            cpu_temp.append(int(items.current))
+    except:
+        cpu_temp.append(0)
 
     return cpu_temp
 
