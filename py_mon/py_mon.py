@@ -288,8 +288,19 @@ def read_disk_io():
 
 def read_disk_temp():
     per_disk = disk_io_counters(perdisk=True)
+    sensor_temps = sensors_temperatures()
     disk_names = []
     disk_temps = []
+    nvme = []
+
+    try:
+        cpu_temps = sensor_temps["nvme"]
+
+        for items in cpu_temps:
+            nvme.append("NVME")
+            nvme.append(int(items.current))
+    finally:
+        disk_temps.append(nvme)
 
     for disk in per_disk:
         disk_names.append(disk.title().lower())
