@@ -299,8 +299,9 @@ def read_disk_temp():
         for items in cpu_temps:
             nvme.append("NVME")
             nvme.append(int(items.current))
-    finally:
-        disk_temps.append(nvme)
+            disk_temps.append(nvme)
+    except:
+        pass
 
     for disk in per_disk:
         disk_names.append(disk.title().lower())
